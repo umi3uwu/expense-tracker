@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from datetime import date
 from sqlalchemy import Column, Date, Integer, MetaData, String, Table, create_engine, select
 
 
@@ -30,3 +30,31 @@ def list_expenses():
     with engine.connect() as connection:
         rows = connection.execute(query).mappings()
         return [dict(row) for row in rows]
+
+def create_expense(
+        amount:int,
+        expense_date: date,
+        category: str,
+        source: str,
+        note: str | None
+):
+    query = expenses.insert().values(
+        amount = amount,
+        date = expense_date,
+        category = category,
+        source = source,
+        note = note
+    )
+
+    with engine.begin() as connection:
+        result = connection.execute(query)
+        expense_id = result.inserted_primary_key[0]
+
+        return{
+            "id": expense_id,
+            "amount":amount,
+            "date":expense_date,
+            "category": category,
+            "source": source,
+            "note":note
+        }

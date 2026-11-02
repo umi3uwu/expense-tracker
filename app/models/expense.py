@@ -24,8 +24,26 @@ def initialize_database():
     metadata.create_all(engine)
 
 
-def list_expenses():
-    query = select(expenses).order_by(expenses.c.id)
+def list_expenses(
+        category: str | None = None,
+        source: str | None = None,
+        date_from: date | None = None,
+        date_to: date | None = None
+):
+    query = select(expenses)
+
+    if category is not None:
+        query = query.where(expenses.c.category == category)
+
+    if source is not None:
+        query = query.where(expenses.c.source == source)
+
+    if date_from is not None:
+        query = query.where(expenses.c.date >= date_from)
+    if date_to is not None:
+        query = query.where(expenses.c.date <= date_to)
+
+    query = query.order_by(expenses.c.id)
 
     with engine.connect() as connection:
         rows = connection.execute(query).mappings()

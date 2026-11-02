@@ -18,8 +18,16 @@ class ExpenseBody(BaseModel):
     note: str | None = None
 
 @router.get("", response_model=list[ExpenseView])
-def list_expenses():
-    return models.list_expenses()
+def list_expenses(
+    category: str | None = None,
+    source: str | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None
+
+):
+    return models.list_expenses(
+        category, source, date_from, date_to
+    )
 
 @router.post("", response_model=ExpenseView)
 def create_expense(body: ExpenseBody):

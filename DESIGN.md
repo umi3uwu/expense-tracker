@@ -34,11 +34,32 @@ Expense:
 - DELETE /expenses/{id} - удалить расход
 - GET /summary - получить статистику расходов
 
+### Контракты (Модельки)
+POST /expenses:
+- amount
+- category
+- date
+- source
+- ... 
+
+PATCH /expenses/{id} - редактировать расход
+- optional: amount
+- optional: category
+- ... 
+
+GET /expenses - получить список расходов и фильтровать
+Input:
+- optional: filter
+Output:
+- JSON array: `[{id, amount, ...}]`
+
 ## База Данных
 
 Таблица expenses
 id amount date        category source    note
 1  1000   22.09.2026  Такси    Наличные  Заказ такси для мамы
+
+### Optional: SQL queries
 
 ## Стек
 

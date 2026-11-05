@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date as DateType
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+
 from pydantic import BaseModel
 
 from app.models import expense as models
@@ -12,17 +13,25 @@ router = APIRouter(prefix="/expenses")
 
 class ExpenseBody(BaseModel):
     amount: int
-    date: date
+    date: DateType
     category: str
     source: str
     note: str | None = None
+
+class ExpenseUpdateBody(BaseModel):
+    amount: int | None = None
+    date: DateType | None = None
+    category: str | None = None
+    source: str | None = None
+    note: str | None = None
+
 
 @router.get("", response_model=list[ExpenseView])
 def list_expenses(
     category: str | None = None,
     source: str | None = None,
-    date_from: date | None = None,
-    date_to: date | None = None
+    date_from: DateType | None = None,
+    date_to: DateType | None = None
 
 ):
     return models.list_expenses(
@@ -38,3 +47,29 @@ def create_expense(body: ExpenseBody):
         body.source,
         body.note
     )
+
+@router.patch("/{id}", response_model=ExpenseView)
+def update_expense(id: int, body: ExpenseUpdateBody):
+    expense = models.update_expense(
+        id,
+        body.model_dump(exclude_unset=True)
+    )
+
+    if expense is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Expense not found"
+        )
+    return expense
+
+@router.delete("/{id}")
+def delete_expense(id:int):
+    deleted=models.delete_expense(id)
+
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail="Expense not found"
+        )
+
+    return{"deleted": True}

@@ -2,7 +2,6 @@ from pathlib import Path
 from datetime import date
 from sqlalchemy import Column, Date, Integer, MetaData, String, Table, create_engine, select
 
-
 database_path = Path(__file__).resolve().parents[2] / "expenses.db"
 engine = create_engine(f"sqlite:///{database_path}")
 
@@ -76,3 +75,29 @@ def create_expense(
             "source": source,
             "note":note
         }
+
+def update_expense(expense_id: int, values: dict):
+    query=(
+        expenses.update()
+        .where(expenses.c.id == expense_id)
+        .values(**values)
+    )
+
+    with engine.begin() as connection:
+        result = connection.execute(query)
+
+        if result.rowcount ==0:
+            return None
+
+        select_query = select(expenses).where(expenses.c.id == expense_id)
+        row = connection.execute(select_query).mappings().first()
+
+        return dict(row)
+
+def delete_expense(expense_id: int):
+    query=expenses.delete().where(expenses.c.id == expense_id)
+
+    with engine.begin() as connection:
+        result = connection.execute(query)
+
+        return result.rowcount>0

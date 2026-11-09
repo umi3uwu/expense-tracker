@@ -10,3 +10,7 @@ class ExpenseView(BaseModel):
     category: str
     source: str
     note: str | None = None
+
+class SummaryView(BaseModel):
+    total_amount:int
+    count:int

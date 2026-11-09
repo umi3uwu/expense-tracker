@@ -5,10 +5,11 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.models import expense as models
-from app.views.expense import ExpenseView
+from app.views.expense import ExpenseView, SummaryView
 
 
 router = APIRouter(prefix="/expenses")
+summary_router = APIRouter()
 
 
 class ExpenseBody(BaseModel):
@@ -73,3 +74,27 @@ def delete_expense(id:int):
         )
 
     return{"deleted": True}
+
+@summary_router.get("/summary", response_model=SummaryView)
+def get_summary(
+    period: str | None = None,
+    date_from: DateType | None = None,
+    date_to: DateType | None = None
+):
+    if period not in(None,"today", "week", "month"):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid period"
+        )
+
+    if period is not None and (date_from is not None or date_to is not None):
+        raise HTTPException(
+            status_code=400,
+            detail="Use period or date range, not both"
+        )
+
+    return models.get_summary(
+        period,
+        date_from,
+        date_to
+    )

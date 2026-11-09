@@ -1,5 +1,5 @@
 from pathlib import Path
-from datetime import date
+from datetime import date, timedelta
 from sqlalchemy import Column, Date, Integer, MetaData, String, Table, create_engine, select
 
 database_path = Path(__file__).resolve().parents[2] / "expenses.db"
@@ -101,3 +101,35 @@ def delete_expense(expense_id: int):
         result = connection.execute(query)
 
         return result.rowcount>0
+
+def get_summary(
+        period: str | None = None,
+        date_from: date | None = None,
+        date_to: date | None = None
+):
+    today=date.today()
+
+    if period=="today":
+        date_from=today
+        date_to=today
+
+    elif period=="week":
+        date_from=today-timedelta(days=6)
+        date_to=today
+
+    elif period == "month":
+        date_from = today- timedelta(days=29)
+        date_to = today
+
+    rows = list_expenses(
+        date_from = date_from,
+        date_to = date_to
+    )
+
+    total_amount = sum(row["amount"] for row in rows)
+    count = len(rows)
+
+    return{
+        "total_amount": total_amount,
+        "count": count
+    }

@@ -51,9 +51,17 @@ def create_expense(body: ExpenseBody):
 
 @router.patch("/{id}", response_model=ExpenseView)
 def update_expense(id: int, body: ExpenseUpdateBody):
+    values = body.model_dump(exclude_unset=True)
+
+    if not values:
+        raise HTTPException(
+            status_code=400,
+            detail="No fields to update"
+        )
+
     expense = models.update_expense(
         id,
-        body.model_dump(exclude_unset=True)
+        values
     )
 
     if expense is None:
@@ -61,6 +69,7 @@ def update_expense(id: int, body: ExpenseUpdateBody):
             status_code=404,
             detail="Expense not found"
         )
+
     return expense
 
 @router.delete("/{id}")
